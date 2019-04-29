@@ -1,0 +1,54 @@
+<template name="contactTemplate">
+  <div class="container">
+    <h3>Contact/Feedback</h3>
+    <form id="contact">
+      <div class="row">
+        <div class="col-sm-12"><h4>Your Email Address</h4></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <input
+            type="email"
+            id="commentFrom"
+            name="commentFrom"
+            required
+            placeholder="Enter a valid email address"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12"><h4>Your Comment or Question</h4></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <textarea id="comment"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <input type="submit" id="sendComment" value="Send" />
+        </div>
+      </div>
+      <div id="commentSuccess" class="row" style="display: none;">
+        <div class="col-sm-12">
+          <h4>
+            Your message has been sent. Thank you very much for your interest!
+          </h4>
+        </div>
+      </div>
+      <div id="commentFailure" class="row" style="display: none;">
+        <div class="col-sm-12">
+          <h4>There has been an error sending your comment</h4>
+          <div id="commentFailureError"></div>
+        </div>
+      </div>
+      {{#if hasComments}} {{#each comments}}
+      <hr />
+      <div class="row">
+        <div class="col-sm-4">From: {{ commentFrom }}</div>
+        <div class="col-sm-8">Comment: {{ comment }}</div>
+      </div>
+      {{/each}} {{/if}}
+    </form>
+  </div>
+</template>

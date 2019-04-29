@@ -1,0 +1,93 @@
+{
+  "name": "eliberate",
+  "version": "1.0.0",
+  "description": "eLiberate =========",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.4.4",
+    "babel-runtime": "^6.26.0",
+    "bcrypt": "^3.0.6",
+    "popper": "^1.0.1",
+    "popper.js": "^1.14.6"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "chai": "^4.2.0",
+    "eslint": "^5.11.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-import-resolver-meteor": "^0.4.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-meteor": "^5.1.0",
+    "eslint-plugin-react": "^7.12.0"
+  },
+  "scripts": {
+    "start": "meteor",
+    "debug": "meteor run --inspect",
+    "pretest": "npm run lint --silent",
+    "test:e2e": "echo 'does nothing yet'",
+    "test:unit": "SERVER_TEST_REPORTER=xunit SERVER_MOCHA_OUTPUT=$PWD/test-results/mocha/results.xml meteor test --port 3100 --driver-package meteortesting:mocha --once",
+    "test:watch": "TEST_WATCH=1 SERVER_TEST_REPORTER=xunit SERVER_MOCHA_OUTPUT=$PWD/test-results/mocha/results.xml meteor test --port 3100 --driver-package meteortesting:mocha",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daposy/eLiberate.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daposy/eLiberate/issues"
+  },
+  "homepage": "https://github.com/daposy/eLiberate#readme",
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "parserOptions": {
+      "allowImportExportEverywhere": true
+    },
+    "plugins": [
+      "meteor"
+    ],
+    "extends": [
+      "airbnb",
+      "plugin:meteor/recommended"
+    ],
+    "rules": {
+      "import/no-extraneous-dependencies": "off",
+      "import/prefer-default-export": "off",
+      "no-underscore-dangle": "off",
+      "object-shorthand": [
+        "error",
+        "always",
+        {
+          "avoidQuotes": false
+        }
+      ],
+      "meteor/eventmap-params": [
+        "error",
+        {
+          "eventParamName": "event",
+          "templateInstanceParamName": "instance"
+        }
+      ],
+      "meteor/template-names": [
+        "off"
+      ]
+    },
+    "settings": {
+      "import/resolver": "meteor"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {
+        "browsers": [
+          "last 2 versions"
+        ]
+      }
+    }
+  }
+}

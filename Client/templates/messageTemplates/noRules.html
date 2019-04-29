@@ -1,0 +1,44 @@
+<template name="noRulesMessages">
+  {{#if Template.subscriptionsReady}}
+    {{#each meetingMessages}}
+      <div class="message" style="background-color:{{backgroundColor}}">
+        <div class="messageHeader">
+          Posted by
+          {{#if this.userName}}
+          	{{userName}}
+          {{else}}
+        	  {{#if this.email}}
+    	        {{email}}
+    	      {{else}}
+    	        Unknown
+    	      {{/if}}
+          {{/if}}
+          @ {{prettifyDate dateTime}}
+        </div>
+  	  {{#markdown}}{{statement}}{{/markdown}}
+      </div>
+    {{/each}}
+    <nav id="messagesFooter" class="navbar navbar-default navbar-fixed-bottom">
+      <div class="container-fluid">
+        {{> noRulesControls}}
+      </div>
+    </nav>
+  {{else}}
+    <div id="meeting_loading">
+      <div id="spinner_container">
+        <h1><i class='fas fa-spinner fa-spin'></i></h1>
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="noRulesControls">
+	<div class="row">
+		<div class="col-sm-12">
+			<p>SPEAK!</p>
+			<textarea id="newMessage"></textarea><br />
+			<input type="button" id="newMessageSubmit" class="btn btn-default" value="Submit" />
+			<button type="button" id="messagePreviewButton" class="btn btn-default show-modal" data-modal="preview">Preview</button>
+		</div>
+	</div>
+</template>

@@ -1,0 +1,385 @@
+<template name="robertsRulesOfOrderHeader">
+  <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
+    <i class="fas fa-comment"></i> {{isInDebate}}
+  </div>
+</template>
+
+<template name="robertsRulesOfOrderTools">
+  <div class="dropdown agenda">
+    <button class="dropbtn">Agenda</button>
+    <div class="dropdown-content">
+      {{#each agenda}}
+        {{#if agendaOccurred}}
+          <a href="#{{name}}"><i class="fas{{statusIcon}}"></i> {{name}}</a>
+        {{else}}
+          <a href="#"><i class="fas{{statusIcon}}"></i> {{name}}</a>
+        {{/if}}
+      {{/each}}
+    </div>
+  </div>
+  <div class="dropdown queue">
+    <button class="dropbtn">Queue ({{queueCount}})</button>
+    <div class="dropdown-content">
+      {{#each queue}}
+        <a href="#">
+          {{#if canRemoveFromQueue}}<i id="removeFromQueue" class="fas fa-ban"></i>{{/if}}
+          {{#if isChairperson}}<i id="recognize" class="fas fa-comment">{{userFloorCount}}</i>{{/if}}
+          {{#if hasTheFloor}}<i class="fas fa-star" style="color: goldenrod;"></i>{{/if}}
+          {{userName}}
+        </a>
+      {{/each}}
+    </div>
+  </div>
+</template>
+
+<template name="robertsRulesOfOrderMessages">
+  {{#if Template.subscriptionsReady}}
+    {{#each meetingMessages}}
+      {{> Template.dynamic template=commandTemplate data=this }}
+    {{/each}}
+    <nav id="messagesFooter" class="navbar navbar-default navbar-fixed-bottom">
+      <div class="container-fluid">
+        {{> robertsRulesOfOrderControls}}
+      </div>
+    </nav>
+  {{else}}
+    <div id="meeting_loading">
+      <div id="spinner_container">
+        <h1><i class='fas fa-spinner fa-spin'></i></h1>
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="robertsRulesOfOrderStandardCommand">
+  <div class="message {{meetingPart}} indent-{{depth}}">
+    <div class="messageHeader">
+      Posted by {{userName}} <i class="fas fa-clock-o"></i> {{prettifyDate dateTime}}
+    </div>
+    <h5>{{commandDisplayName}}</h5>
+    {{#markdown}}{{statement}}{{/markdown}}
+  </div>
+</template>
+
+<template name="robertsRulesOfOrderVotableCommand">
+  <div class="message {{meetingPart}} indent-{{depth}}">
+    <div class="messageHeader">
+      Posted by {{userName}} <i class="fas fa-clock-o"></i> {{prettifyDate dateTime}}
+    </div>
+    <h5>{{commandDisplayName}}</h5>
+    {{#markdown}}{{statement}}{{/markdown}}
+    {{#if killed}}
+      <strong>The motion has been killed by the chairperson.</strong>
+    {{else}}
+      {{#if needsSecond}}
+        <strong>A second is required</strong>
+        {{#if canSecond}}
+          <input type="button" class="btn btn-primary" id="second" value="Second" />
+        {{/if}}
+        {{#if canKillMotion}}
+          <input type="button" class="btn btn-primary" id="killMotion" value="Withdraw the Motion" />
+        {{/if}}
+      {{/if}}
+      {{#if motionNotSeconded}}
+        <strong>The motion was not seconded</strong>
+      {{/if}}
+      {{#if seconded}}
+        <strong>Seconded by {{secondedBy}}</strong>
+      {{/if}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="PutToVoteCommand">
+  <div class="message {{meetingPart}} indent-{{depth}}">
+    <div class="messageHeader">
+      Posted by {{userName}} <i class="fas fa-clock-o"></i> {{prettifyDate dateTime}}
+    </div>
+    <h5>{{commandDisplayName}}</h5>
+    {{#markdown}}{{statement}}{{/markdown}}
+
+    <h5>Motion Put to Vote</h5>
+    {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=motionPutToVote }}
+
+    {{#if inVote}}
+      <div><strong>The motion is currently under vote</strong></div>
+      <div class="row">
+        <div class="col-sm-1">
+          Aye Votes: {{aye}}
+        </div>
+        <div class="col-sm-1">
+          Nay Votes: {{nay}}
+        </div>
+        <div class="col-sm-1">
+          Abstained: {{abstain}}
+        </div>
+      </div>
+      {{#if canVote}}
+        <input type="button" class="btn btn-primary" id="vote" value="Vote" />
+      {{else}}
+        <div>You voted: <strong>{{yourVote}}</strong></div>
+      {{/if}}
+      {{#if isChairperson}}
+      <div class="col-sm-3">
+        <input type="button" class="btn btn-primary" id="kill" value="Kill" />
+      </div>
+      {{/if}}
+    {{/if}}
+    {{#if approved}}
+      <div class="bg-success ">
+        <strong>Motion carried with a vote of {{aye}} for, {{nay}} against, and {{abstain}} abstaining.</strong>
+        {{#if notYetRatified}}
+          {{#if isChairperson}}
+            <input type="button" class="btn btn-primary" id="ratify" value="Ratify the Vote" />
+          {{/if}}
+        {{else}}
+          <strong>The motion has been ratified by the chairperson.</strong>
+        {{/if}}
+      </div>
+    {{/if}}
+    {{#if denied}}
+      <div class="bg-danger finalVoteTallyCarry">
+        <strong>Motion not carried with a vote of {{nay}} against, {{aye}} for, and {{abstain}} abstaining.</strong>
+        {{#if notYetRatified}}
+          {{#if isChairperson}}
+            <input type="button" class="btn btn-primary" id="ratify" value="Ratify the Vote" />
+          {{/if}}
+        {{/if}}
+        {{#if ratified}}
+          <strong>The motion has been ratified by the chairperson.</strong>
+        {{/if}}
+      </div>
+    {{/if}}
+    {{#if killed}}
+      <div class="bg-danger finalVoteTallyCarry">
+        <strong>The motion was killed by the chairperson.</strong>
+      </div>
+    {{/if}}
+    </div>
+    {{#if requiresVote}}
+    <div class="modal-backdrop fade in"></div>
+    <div id="voteModal" class="modal show" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+             <h4 class="modal-title">A {{VoteType}} vote is required</h4>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="messageHeader">
+                Posted by {{userName}} <i class="fas fa-clock-o"></i> {{prettifyDate dateTime}}
+              </div>
+              <h5>{{commandDisplayName}}</h5>
+              {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=motionPutToVote }}
+            </div>
+            <div class="row">
+              <div class="col-sm-3">
+                <input type="button" class="btn btn-primary" id="aye" value="Aye" />
+              </div>
+              <div class="col-sm-3">
+                <input type="button" class="btn btn-primary" id="nay" value="Nay" />
+              </div>
+              <div class="col-sm-3">
+                <input type="button" class="btn btn-primary" id="abstain" value="Abstain" />
+              </div>
+              {{#if isChairperson}}
+              <div class="col-sm-3">
+                <input type="button" class="btn btn-primary" id="kill-vote" value="Kill" />
+              </div>
+              {{/if}}
+            </div>
+            <div class="row">
+              <div class="col-sm-3">
+                Aye Votes: {{aye}}
+              </div>
+              <div class="col-sm-3">
+                Nay Votes: {{nay}}
+              </div>
+              <div class="col-sm-3">
+                Abstained: {{abstain}}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+          </div>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="CallMeetingToOrderCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="OpenAgendaItemCommand">
+  <a class="agena-link" name="{{agendaName}}"></a>
+  <div class="message {{meetingPart}} indent-{{depth}}">
+    <div class="messageHeader">
+      Posted by {{userName}} <i class="fas fa-clock-o"></i> {{prettifyDate dateTime}}
+    </div>
+    <h5>{{commandDisplayName}} '{{agendaName}}'</h5>
+  {{#markdown}}{{statement}}{{/markdown}}
+  </div>
+</template>
+
+<template name="MakeAStatementCommand">
+  <div class="message {{meetingPart}} indent-{{depth}}">
+    <div class="messageHeader">
+      Posted by {{userName}} <i class="fas fa-clock-o"></i> {{prettifyDate dateTime}}
+    </div>
+  {{#markdown}}{{statement}}{{/markdown}}
+  </div>
+</template>
+
+<template name="OpenTheFloorToDebateCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="CloseFloorToDebateCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="AdjournTheMeetingCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="AmendCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="AppealDecisionOfTheChairCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="CommitToCommitteeCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="DivideTheQuestionCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="ExtendDebateCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="KillCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="InformalConsiderationCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="LayOnTheTableCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="LimitDebateCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="ObjectToConsiderationCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="OpenFloorToDebateCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="OrdersOfTheDayCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="PointOfInformationCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="PointOfOrderCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderStandardCommand" data=this }}
+</template>
+
+<template name="PostponeIndefinitelyCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="PostponeToACertainTimeCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="PreviousQuestionCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="ReconsiderCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="SuspendTheRulesCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="TakeFromTheTableCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="WithdrawModifyMotionCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="MotionCommand">
+  {{> Template.dynamic template="robertsRulesOfOrderVotableCommand" data=this }}
+</template>
+
+<template name="robertsRulesOfOrderControls">
+  {{#if pending}}
+    <div class="alert alert-danger">
+      The meeting has not been called to order.  The scheduled start time is {{prettifyDate startDateTime}}.
+    </div>
+  {{/if}}
+  {{#if calledToOrder}}
+  	<div class="row">
+  		<div class="col-sm-12 col-xs-12 col-md-12 col-lg-12">
+    			<textarea id="newMessage"></textarea><br />
+          {{#each typers}}
+            <i>{{userName}} is typing...</i><br />
+          {{/each}}
+          {{#if hasTheFloor}}
+          <div class="alert alert-danger">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">x</a>
+            You have the floor!
+          </div>
+          {{/if}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <div id="commandDropdown" class="dropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+            <span id="commandSelected">Actions</span>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu" id="commandMenu" aria-labelledby="commandSelected">
+            {{#each commands}}
+              {{{seperator}}}
+              <li class="{{actionDisabled}}" data-toggle="tooltip" data-placement="right" {{tooltipTag}}>{{commandName}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        <input type="button" id="newMessageSubmit" class="btn btn-default" value="Submit" {{allowToSubmit}}/>
+        <button type="button" id="messagePreviewButton" class="btn btn-default show-modal" data-modal="preview">Preview</button>
+        <input type="hidden" id="ruleset" />
+        {{#unless isChairperson}}
+        <input type="button" id="requestTheFloor" class="btn btn-default" value="Request the Floor" data-tooltip="Join the queue in order to speak or take most actions. You can queue several times. The chairperson must give you the floor before you can take an action."/>
+        {{/unless}}
+  		</div>
+  	</div>
+  {{/if}}
+  {{#if adjourned}}
+    <div class="alert alert-danger">
+      The meeting ajourned at {{prettifyDate endDateTime}}.
+    </div>
+  {{/if}}
+</template>

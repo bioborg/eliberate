@@ -1,0 +1,22 @@
+# Meteor files to ignore now handled by .ignore file within .Meteor folder automatically
+
+# settings file to ignore to protect API keys
+settings.json
+
+# MUP / MUPX file to ignore to protect server passwords and sensitive info.
+mup.json
+
+# npm package files to ignore
+node_modules
+npm-debug.log
+
+# Webstorm IDE files to ignore
+.idea/*
+
+# Typing type definition files to ignore. Webstorm uses type definitions for autocomplete even without typescript
+typings/*
+
+# test results
+test-results
+
+.meteor
